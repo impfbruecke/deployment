@@ -1,1 +1,1 @@
-nixos-rebuild switch --target-host root@impfbruecke.de -I nixos-config=./machine-config.nix
+nixos-rebuild switch --target-host root@impfbruecke.de -I nixos-config=./configuration.nix

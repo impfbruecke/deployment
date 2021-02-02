@@ -6,7 +6,7 @@ with lib;
 {
   imports = [
     <nixpkgs/nixos/modules/installer/cd-dvd/channel.nix>
-    ./machine-config.nix
+    ./configuration.nix
   ];
 
   system.build.qcow2 = import <nixpkgs/nixos/lib/make-disk-image.nix> {
@@ -16,6 +16,6 @@ with lib;
     }; # ensure we use the regular qemu-kvm package
     diskSize = 8192;
     format = "qcow2";
-    configFile = ./machine-config.nix;
+    configFile = ./configuration.nix;
   };
 }
