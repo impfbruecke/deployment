@@ -1,8 +1,18 @@
 { config, pkgs, lib, ... }:
-with lib; {
-  imports = [
-    <nixpkgs/nixos/modules/profiles/qemu-guest.nix>
-  ];
+let
+  # Custom package, building from relative path
+  # https://nixos.org/manual/nixpkgs/stable/#ex-buildGoModule
+  impfbruecke = pkgs.buildGoModule rec {
+    pname = "impfbruecke";
+    version = "0.0.1";
+    src = ../backend-go;
+    vendorSha256 = "0lsy6bna388f7w90hdqmg87748bbiwliaw5naabjfc77mlaxr730";
+    subPackages = [ "." ];
+    deleteVendor = false;
+    # runVend = true;
+  };
+in with lib; {
+  imports = [ <nixpkgs/nixos/modules/profiles/qemu-guest.nix> ];
 
   config = {
 
@@ -21,10 +31,8 @@ with lib; {
     # Users
     users = {
       users.root = {
-        # password = "nixos"; # In case you want a root password set
-        openssh.authorizedKeys.keyFiles = [
-          (builtins.fetchurl { url = "https://github.com/pinpox.keys"; })
-        ];
+        openssh.authorizedKeys.keyFiles =
+          [ (builtins.fetchurl { url = "https://github.com/pinpox.keys"; }) ];
       };
     };
 
@@ -36,7 +44,7 @@ with lib; {
 
     # Install some basic utilities
     environment.systemPackages =
-      [ pkgs.git pkgs.docker-compose pkgs.ag pkgs.htop ];
+      [ pkgs.git pkgs.docker-compose pkgs.ag pkgs.htop pkgs.go impfbruecke ];
 
     # Docker
     virtualisation.docker.enable = true;
@@ -45,7 +53,7 @@ with lib; {
     # Networking, SSH, SSL
     networking.hostName = "impf-back";
 
-    security.acme.email = "acme@pablo.tools";
+    security.acme.email = "acme@impfbruecke.de";
     security.acme.acceptTerms = true;
 
     services.nginx = {
@@ -54,14 +62,35 @@ with lib; {
       recommendedTlsSettings = true;
       clientMaxBodySize = "128m";
 
-      # Needed for bitwarden_rs, it seems to have trouble serving scripts for
-      # the frontend without it.
       commonHttpConfig = ''
         server_names_hash_bucket_size 128;
       '';
+
+      virtualHosts = {
+
+        # Static page
+        # "impfbruecke.de" = {
+        #   forceSSL = true;
+        #   enableACME = true;
+        #   root = "/var/www/";
+        # };
+
+        # API
+        "api.impfbruecke.de" = {
+          forceSSL = true;
+          enableACME = true;
+          locations."/" = { proxyPass = "http://127.0.0.1:12000"; };
+        };
+      };
     };
 
     programs.ssh.startAgent = false;
+
+    networking.firewall = {
+      enable = true;
+      allowPing = true;
+      allowedTCPPorts = [ 80 443 22 ];
+    };
 
     services.openssh = {
       enable = true;
@@ -71,5 +100,26 @@ with lib; {
       permitRootLogin = "yes";
     };
 
+  users.groups."impfbruecke" = { };
+  users.users."impfbruecke" = {
+    description = "impfbruecke System user";
+    group = "impfbruecke";
+    extraGroups = [ ];
+    home = "/var/lib/impfbruecke";
+    createHome = true;
+    isSystemUser = true;
+  };
+
+    systemd.services.impfbruecke= {
+      wantedBy = [ "multi-user.target" ];
+      after = [ "network.target" ];
+      description = "Impfbruecke backend";
+      serviceConfig = {
+        Type = "forking";
+        User = "impfbruecke";
+        ExecStart = "${impfbruecke}/bin/backend-go";
+        # ExecStop = ''${pkgs.screen}/bin/screen -S irc -X quit'';
+      };
+    };
   };
 }
