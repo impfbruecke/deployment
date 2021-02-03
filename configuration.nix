@@ -9,7 +9,13 @@ let
     vendorSha256 = "0lsy6bna388f7w90hdqmg87748bbiwliaw5naabjfc77mlaxr730";
     subPackages = [ "." ];
     deleteVendor = false;
-    # runVend = true;
+
+    postInstall = ''
+      mkdir -p $out
+      cp -R templates $out/bin
+      cp -R static $out/bin
+        '';
+
   };
 in with lib; {
   imports = [ <nixpkgs/nixos/modules/profiles/qemu-guest.nix> ];
@@ -100,24 +106,24 @@ in with lib; {
       permitRootLogin = "yes";
     };
 
-  users.groups."impfbruecke" = { };
-  users.users."impfbruecke" = {
-    description = "impfbruecke System user";
-    group = "impfbruecke";
-    extraGroups = [ ];
-    home = "/var/lib/impfbruecke";
-    createHome = true;
-    isSystemUser = true;
-  };
+    users.groups."impfbruecke" = { };
+    users.users."impfbruecke" = {
+      description = "impfbruecke System user";
+      group = "impfbruecke";
+      extraGroups = [ ];
+      home = "/var/lib/impfbruecke";
+      createHome = true;
+      isSystemUser = true;
+    };
 
-    systemd.services.impfbruecke= {
+    systemd.services.impfbruecke = {
       wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
       description = "Impfbruecke backend";
       serviceConfig = {
-        Type = "forking";
         User = "impfbruecke";
         ExecStart = "${impfbruecke}/bin/backend-go";
+        WorkingDirectory = "${impfbruecke}/bin";
         # ExecStop = ''${pkgs.screen}/bin/screen -S irc -X quit'';
       };
     };
