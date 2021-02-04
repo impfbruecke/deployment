@@ -6,7 +6,7 @@ let
     pname = "impfbruecke";
     version = "0.0.1";
     src = ../backend-go;
-    vendorSha256 = null;
+    vendorSha256 = "1l4m6sxamcxy1iw1cq8rh4q8jy6vcvl82clyy4jp18b1i21jpmvb";
     subPackages = [ "." ];
     deleteVendor = false;
     # deleteVendor = true;
