@@ -125,8 +125,18 @@ in with lib; {
       serviceConfig = {
         User = "impfbruecke";
         ExecStart = "${impfbruecke}/bin/backend-go";
+
+        # Create directory for database, if it does not exist
+        ExecStartPre = ''
+        #!${pkgs.stdenv.shell}
+         mkdir -p /var/lib/impfbruecke";
+        '';
         WorkingDirectory = "${impfbruecke}/bin";
-        # ExecStop = ''${pkgs.screen}/bin/screen -S irc -X quit'';
+        # EnvironmentFile = /var/src/secrets/impf_env;
+
+        Environment = [
+          "IMPF_DB_FILE=/var/lib/impfbruecke"
+        ];
       };
     };
   };
