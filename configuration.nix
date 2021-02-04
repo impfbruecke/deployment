@@ -6,9 +6,11 @@ let
     pname = "impfbruecke";
     version = "0.0.1";
     src = ../backend-go;
-    vendorSha256 = "0lsy6bna388f7w90hdqmg87748bbiwliaw5naabjfc77mlaxr730";
+    vendorSha256 = null;
     subPackages = [ "." ];
     deleteVendor = false;
+    # deleteVendor = true;
+    runVend = true;
 
     postInstall = ''
       mkdir -p $out
