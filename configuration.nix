@@ -6,7 +6,10 @@ let
     pname = "impfbruecke";
     version = "0.0.1";
     src = ../backend-go;
-    vendorSha256 = "1l4m6sxamcxy1iw1cq8rh4q8jy6vcvl82clyy4jp18b1i21jpmvb";
+
+    # This needs to be updated, when go.mod or go.sum changes!!!
+    # vendorSha256 = "0000000000000000000000000000000000000000000000000000";
+    vendorSha256 = "0gidj8wz4iybai9gnaa1qcq685b557wf9pf2pgv7zd0w93824ibc";
     subPackages = [ "." ];
     deleteVendor = false;
     # deleteVendor = true;
@@ -128,14 +131,16 @@ in with lib; {
 
         # Create directory for database, if it does not exist
         ExecStartPre = ''
-        #!${pkgs.stdenv.shell}
-         mkdir -p /var/lib/impfbruecke";
+        ${pkgs.stdenv.shell} -c "mkdir -p /var/lib/impfbruecke";
         '';
         WorkingDirectory = "${impfbruecke}/bin";
         # EnvironmentFile = /var/src/secrets/impf_env;
 
         Environment = [
-          "IMPF_DB_FILE=/var/lib/impfbruecke"
+          "IMPF_MODE=DEVEL" # TODO Change on real deployment
+          "IMPF_DB_FILE=/var/lib/impfbruecke/data.db"
+          "IMPF_APP_KEY_PRIVATE=/var/lib/impfbruecke/keys/app.rsa"
+          "IMPF_APP_KEY_PUBLIC=/var/lib/impfbruecke/keys/app.rsa.pub"
         ];
       };
     };
