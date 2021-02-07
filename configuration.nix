@@ -9,7 +9,7 @@ let
 
     # This needs to be updated, when go.mod or go.sum changes!!!
     # vendorSha256 = "0000000000000000000000000000000000000000000000000000";
-    vendorSha256 = "0gidj8wz4iybai9gnaa1qcq685b557wf9pf2pgv7zd0w93824ibc";
+    vendorSha256 = "0rn6cr69banih2b4prn061sv494qz7sv3rdzl9d9ngdk91cxy1v4";
     subPackages = [ "." ];
     deleteVendor = false;
     # deleteVendor = true;
