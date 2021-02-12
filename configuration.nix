@@ -9,7 +9,7 @@ let
 
     # This needs to be updated, when go.mod or go.sum changes!!!
     # vendorSha256 = "0000000000000000000000000000000000000000000000000000";
-    vendorSha256 = "0rn6cr69banih2b4prn061sv494qz7sv3rdzl9d9ngdk91cxy1v4";
+    vendorSha256 = "0yqxn62irsbsg1q346nprh2h38baa6fm7m9c24iw6sgapqjj16kd";
     subPackages = [ "." ];
     deleteVendor = false;
     # deleteVendor = true;
@@ -54,8 +54,15 @@ in with lib; {
     };
 
     # Install some basic utilities
-    environment.systemPackages =
-      [ pkgs.git pkgs.docker-compose pkgs.ag pkgs.htop pkgs.go impfbruecke ];
+    environment.systemPackages = [
+      pkgs.git
+      pkgs.docker-compose
+      pkgs.ag
+      pkgs.htop
+      pkgs.go
+      pkgs.sqlite
+      impfbruecke
+    ];
 
     # Docker
     virtualisation.docker.enable = true;
@@ -131,17 +138,10 @@ in with lib; {
 
         # Create directory for database, if it does not exist
         ExecStartPre = ''
-        ${pkgs.stdenv.shell} -c "mkdir -p /var/lib/impfbruecke";
+          ${pkgs.stdenv.shell} -c "mkdir -p /var/lib/impfbruecke";
         '';
         WorkingDirectory = "${impfbruecke}/bin";
-        # EnvironmentFile = /var/src/secrets/impf_env;
-
-        Environment = [
-          "IMPF_MODE=DEVEL" # TODO Change on real deployment
-          "IMPF_DB_FILE=/var/lib/impfbruecke/data.db"
-          "IMPF_APP_KEY_PRIVATE=/var/lib/impfbruecke/keys/app.rsa"
-          "IMPF_APP_KEY_PUBLIC=/var/lib/impfbruecke/keys/app.rsa.pub"
-        ];
+        EnvironmentFile = /var/lib/impfbruecke/secrets;
       };
     };
   };
